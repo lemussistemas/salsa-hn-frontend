@@ -253,8 +253,54 @@ export async function deleteGrupo(id: string): Promise<boolean> {
 
 /* ========= MATRÍCULAS ========= */
 
-export async function fetchMatriculas() {
+export type MatriculaDTO = {
+  id: string;
+  alumno: string;
+  grupo: string;
+  ciclo: "mensual" | "trimestral";
+  fecha_inicio: string;
+  fecha_fin: string | null;
+  estado: "vigente" | "vencida" | "pausada";
+  saldo_actual: string;
+  alumno_detalle?: AlumnoDTO;
+  grupo_detalle?: GrupoDTO;
+};
+
+export type CreateMatriculaDTO = {
+  alumno: string;
+  grupo: string;
+  ciclo: "mensual" | "trimestral";
+  fecha_inicio: string;
+  fecha_fin?: string | null;
+  estado?: "vigente" | "vencida" | "pausada";
+};
+
+export async function fetchMatriculas(): Promise<MatriculaDTO[]> {
   return apiGet("/api/matriculas/");
+}
+
+export async function fetchMatriculasVigentes(): Promise<MatriculaDTO[]> {
+  return apiGet("/api/matriculas/vigentes/");
+}
+
+export async function fetchMatriculasConDeuda(): Promise<MatriculaDTO[]> {
+  return apiGet("/api/matriculas/con_deuda/");
+}
+
+export async function createMatricula(data: CreateMatriculaDTO): Promise<MatriculaDTO> {
+  return apiPost("/api/matriculas/", data);
+}
+
+export async function updateMatricula(id: string, data: Partial<CreateMatriculaDTO>): Promise<MatriculaDTO> {
+  return apiPatch(`/api/matriculas/${id}/`, data);
+}
+
+export async function deleteMatricula(id: string): Promise<boolean> {
+  return apiDelete(`/api/matriculas/${id}/`);
+}
+
+export async function fetchEstadoCuenta(id: string) {
+  return apiGet(`/api/matriculas/${id}/estado_cuenta/`);
 }
 
 /* ========= PAGOS / FACTURAS ========= */
