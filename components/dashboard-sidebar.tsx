@@ -1,5 +1,7 @@
 "use client";
 
+import { fetchMenus } from "@/lib/api";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -11,54 +13,43 @@ import {
   DollarSign,
   Calendar,
   UserCog,
-  FileText
+  FileText,
 } from "lucide-react";
-
-const sidebarItems = [
-  {
-    title: "Resumen",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-  },
-  {
-    title: "Alumnos",
-    href: "/dashboard/alumnos",
-    icon: Users,
-  },
-  {
-    title: "Instructores",
-    href: "/dashboard/instructores",
-    icon: UserCog,
-  },
-  {
-    title: "Cursos",
-    href: "/dashboard/cursos",
-    icon: GraduationCap,
-  },
-  {
-    title: "Matrículas",
-    href: "/dashboard/matriculas",
-    icon: FileText,
-  },
-  {
-    title: "Pagos",
-    href: "/dashboard/pagos",
-    icon: DollarSign,
-  },
-  {
-    title: "Asistencia",
-    href: "/dashboard/asistencia",
-    icon: CheckSquare,
-  },
-  {
-    title: "Eventos",
-    href: "/dashboard/eventos",
-    icon: Calendar,
-  },
-];
 
 export function DashboardSidebar() {
   const pathname = usePathname();
+
+  // ⬇️ AQUÍ van los hooks, DENTRO del componente
+  const [sidebarItems, setSidebarItems] = useState<
+    { title: string; href: string; icon: any }[]
+  >([]);
+
+  useEffect(() => {
+    fetchMenus()
+      .then((data) => {
+        const iconMap: Record<string, any> = {
+          Dashboard: LayoutDashboard,
+          Resumen: LayoutDashboard,
+          Alumnos: Users,
+          Instructores: UserCog,
+          Cursos: GraduationCap,
+          Matriculas: FileText,
+          Matrículas: FileText,
+          Pagos: DollarSign,
+          Asistencia: CheckSquare,
+          Eventos: Calendar,
+        };
+
+        const items = data.map((menu: any) => ({
+          title: menu.nombre,
+          href: menu.ruta,
+          icon: iconMap[menu.nombre] || LayoutDashboard,
+        }));
+
+        setSidebarItems(items);
+      })
+      .catch((err) => console.error("Error cargando menús:", err));
+  }, []);
 
   return (
     <aside className="w-64 border-r bg-card/50 backdrop-blur-sm">
