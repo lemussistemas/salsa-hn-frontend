@@ -50,6 +50,47 @@ async function apiPost(path: string, body: any) {
   return res.json();
 }
 
+// Helper genérico para PATCH con auth
+async function apiPatch(path: string, body: any) {
+  const token = getAccessToken();
+
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    console.error("Error en PATCH", path, res.status, text);
+    throw new Error(`Error en PATCH ${path}: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+// Helper genérico para DELETE con auth
+async function apiDelete(path: string) {
+  const token = getAccessToken();
+
+  const res = await fetch(`${API_URL}${path}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Error en DELETE ${path}: ${res.status}`);
+  }
+
+  return res.ok;
+}
+
 /* ========= MENÚS ========= */
 
 export type MenuDTO = {
@@ -99,47 +140,115 @@ export async function createAlumno(data: CreateAlumnoDTO): Promise<AlumnoDTO> {
 }
 
 /* ========= INSTRUCTORES ========= */
-/* ========= INSTRUCTORES ========= */
 
-// Obtener lista de instructores
-export async function fetchInstructores() {
-  return apiGet("/api/instructores/");
-}
-
-// Crear nuevo instructor
-export async function createInstructor(data: {
+export type InstructorDTO = {
+  id: string;
   nombres: string;
   apellidos: string;
   email?: string;
   telefono?: string;
-  estado?: string;
-}) {
-  const token = getAccessToken();
+  tipo_pago: "por_clase" | "fijo";
+  tarifa_clase: string;
+  salario_base: string;
+  activo: boolean;
+  nombre?: string;
+  correo?: string;
+};
 
-  const res = await fetch(`${API_URL}/api/instructores/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
-    body: JSON.stringify(data),
-  });
+export type CreateInstructorDTO = {
+  nombres: string;
+  apellidos: string;
+  email?: string;
+  telefono?: string;
+  tipo_pago?: "por_clase" | "fijo";
+  tarifa_clase?: number;
+  salario_base?: number;
+  activo?: boolean;
+};
 
-  if (!res.ok) {
-    throw new Error(`Error al crear instructor: ${res.status}`);
-  }
+// Obtener lista de instructores
+export async function fetchInstructores(): Promise<InstructorDTO[]> {
+  return apiGet("/api/instructores/");
+}
 
-  return res.json();
+// Crear nuevo instructor
+export async function createInstructor(data: CreateInstructorDTO): Promise<InstructorDTO> {
+  return apiPost("/api/instructores/", data);
 }
 
 /* ========= CURSOS / GRUPOS ========= */
 
-export async function fetchCursos() {
+export type CursoDTO = {
+  id: string;
+  nombre: string;
+  nivel: "básico" | "intermedio" | "avanzado";
+  precio_base: string;
+  estado: "activo" | "inactivo";
+};
+
+export type CreateCursoDTO = {
+  nombre: string;
+  nivel: "básico" | "intermedio" | "avanzado";
+  precio_base: number;
+  estado?: "activo" | "inactivo";
+};
+
+export type GrupoDTO = {
+  id: string;
+  curso: string;
+  nombre_grupo: string;
+  cupo: number;
+  dia_semana: string;
+  hora_inicio: string;
+  hora_fin: string;
+  sede: string;
+  estado: "activo" | "inactivo";
+  curso_detalle?: CursoDTO;
+  inscritos?: number;
+  disponibles?: number;
+};
+
+export type CreateGrupoDTO = {
+  curso: string;
+  nombre_grupo: string;
+  cupo: number;
+  dia_semana: string;
+  hora_inicio: string;
+  hora_fin: string;
+  sede?: string;
+  estado?: "activo" | "inactivo";
+};
+
+export async function fetchCursos(): Promise<CursoDTO[]> {
   return apiGet("/api/cursos/");
 }
 
-export async function fetchGrupos() {
+export async function createCurso(data: CreateCursoDTO): Promise<CursoDTO> {
+  return apiPost("/api/cursos/", data);
+}
+
+export async function updateCurso(id: string, data: Partial<CreateCursoDTO>): Promise<CursoDTO> {
+  return apiPatch(`/api/cursos/${id}/`, data);
+}
+
+export async function deleteCurso(id: string): Promise<boolean> {
+  return apiDelete(`/api/cursos/${id}/`);
+}
+
+export async function fetchGrupos(): Promise<GrupoDTO[]> {
   return apiGet("/api/grupos/");
+}
+
+export async function createGrupo(data: CreateGrupoDTO): Promise<GrupoDTO> {
+  return apiPost("/api/grupos/", data);
+}
+
+export async function updateGrupo(id: string, data: Partial<CreateGrupoDTO>): Promise<GrupoDTO> {
+  return apiPatch(`/api/grupos/${id}/`, data);
+}
+
+export async function deleteGrupo(id: string): Promise<boolean> {
+  return apiDelete(`/api/grupos/${id}/`);
 }
 
 /* ========= MATRÍCULAS ========= */
