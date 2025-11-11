@@ -305,12 +305,59 @@ export async function fetchEstadoCuenta(id: string) {
 
 /* ========= PAGOS / FACTURAS ========= */
 
-export async function fetchPagos() {
+export type PagoDTO = {
+  id: string;
+  matricula: string;
+  monto: string;
+  metodo: "efectivo" | "transferencia" | "tarjeta";
+  referencia: string;
+  fecha: string;
+  estado: "aplicado" | "pendiente" | "anulado";
+  factura: string | null;
+};
+
+export type CreatePagoDTO = {
+  matricula: string;
+  monto: number;
+  metodo: "efectivo" | "transferencia" | "tarjeta";
+  referencia?: string;
+  estado?: "aplicado" | "pendiente" | "anulado";
+};
+
+export type FacturaDTO = {
+  id: string;
+  matricula: string | null;
+  numero: string;
+  fecha: string;
+  subtotal: string;
+  impuestos: string;
+  total: string;
+  estado: "emitida" | "anulada";
+  pdf_url: string;
+};
+
+export async function fetchPagos(): Promise<PagoDTO[]> {
   return apiGet("/api/pagos/");
 }
 
-export async function fetchFacturas() {
+export async function createPago(data: CreatePagoDTO): Promise<PagoDTO> {
+  return apiPost("/api/pagos/", data);
+}
+
+export async function updatePago(id: string, data: Partial<CreatePagoDTO>): Promise<PagoDTO> {
+  return apiPatch(`/api/pagos/${id}/`, data);
+}
+
+export async function deletePago(id: string): Promise<boolean> {
+  return apiDelete(`/api/pagos/${id}/`);
+}
+
+export async function fetchFacturas(): Promise<FacturaDTO[]> {
   return apiGet("/api/facturas/");
+}
+
+export async function fetchFactura(id: string): Promise<FacturaDTO> {
+  return apiGet(`/api/facturas/${id}/`);
 }
 
 /* ========= ASISTENCIA ========= */
@@ -397,10 +444,81 @@ export async function deleteAsistencia(id: string): Promise<boolean> {
 
 /* ========= EVENTOS / TICKETS ========= */
 
-export async function fetchEventos() {
+export type EventoDTO = {
+  id: string;
+  nombre: string;
+  fecha: string;
+  sede: string;
+  aforo: number;
+  precio: string;
+  estado: "programado" | "realizado" | "cancelado";
+};
+
+export type CreateEventoDTO = {
+  nombre: string;
+  fecha: string;
+  sede?: string;
+  aforo: number;
+  precio: number;
+  estado?: "programado" | "realizado" | "cancelado";
+};
+
+export type TicketDTO = {
+  id: string;
+  evento: string;
+  alumno: string | null;
+  comprador_nombre: string;
+  comprador_email: string;
+  precio: string;
+  estado: "vendido" | "anulado";
+  codigo_qr: string;
+};
+
+export type CreateTicketDTO = {
+  evento: string;
+  alumno?: string | null;
+  comprador_nombre: string;
+  comprador_email: string;
+  precio: number;
+  estado?: "vendido" | "anulado";
+};
+
+export async function fetchEventos(): Promise<EventoDTO[]> {
   return apiGet("/api/eventos/");
 }
 
-export async function fetchTickets() {
+export async function fetchEvento(id: string): Promise<EventoDTO> {
+  return apiGet(`/api/eventos/${id}/`);
+}
+
+export async function createEvento(data: CreateEventoDTO): Promise<EventoDTO> {
+  return apiPost("/api/eventos/", data);
+}
+
+export async function updateEvento(id: string, data: Partial<CreateEventoDTO>): Promise<EventoDTO> {
+  return apiPatch(`/api/eventos/${id}/`, data);
+}
+
+export async function deleteEvento(id: string): Promise<boolean> {
+  return apiDelete(`/api/eventos/${id}/`);
+}
+
+export async function fetchTickets(): Promise<TicketDTO[]> {
   return apiGet("/api/tickets/");
+}
+
+export async function fetchTicketsPorEvento(eventoId: string): Promise<TicketDTO[]> {
+  return apiGet(`/api/tickets/?evento=${eventoId}`);
+}
+
+export async function createTicket(data: CreateTicketDTO): Promise<TicketDTO> {
+  return apiPost("/api/tickets/", data);
+}
+
+export async function updateTicket(id: string, data: Partial<CreateTicketDTO>): Promise<TicketDTO> {
+  return apiPatch(`/api/tickets/${id}/`, data);
+}
+
+export async function deleteTicket(id: string): Promise<boolean> {
+  return apiDelete(`/api/tickets/${id}/`);
 }
