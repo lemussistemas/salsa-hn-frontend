@@ -315,12 +315,84 @@ export async function fetchFacturas() {
 
 /* ========= ASISTENCIA ========= */
 
-export async function fetchSesiones() {
+export type SesionDTO = {
+  id: string;
+  grupo: string;
+  grupo_id?: string;
+  grupo_nombre?: string;
+  fecha: string;
+  hora_inicio: string;
+  hora_fin: string;
+  instructor: string;
+  instructor_id?: string;
+  instructor_nombre?: string;
+  estado: "programada" | "impartida" | "cancelada";
+  titulo?: string;
+};
+
+export type CreateSesionDTO = {
+  grupo: string;
+  fecha: string;
+  hora_inicio: string;
+  hora_fin: string;
+  instructor: string;
+  estado?: "programada" | "impartida" | "cancelada";
+};
+
+export type AsistenciaDTO = {
+  id: string;
+  sesion: string;
+  sesion_id?: string;
+  sesion_titulo?: string;
+  alumno: string;
+  alumno_id?: string;
+  alumno_nombre?: string;
+  presente: boolean;
+  registrado_por: string;
+  timestamp: string;
+};
+
+export type CreateAsistenciaDTO = {
+  sesion: string;
+  alumno: string;
+  presente: boolean;
+  registrado_por: string;
+};
+
+export async function fetchSesiones(): Promise<SesionDTO[]> {
   return apiGet("/api/sesiones/");
 }
 
-export async function fetchAsistencias() {
+export async function fetchSesion(id: string): Promise<SesionDTO> {
+  return apiGet(`/api/sesiones/${id}/`);
+}
+
+export async function createSesion(data: CreateSesionDTO): Promise<SesionDTO> {
+  return apiPost("/api/sesiones/", data);
+}
+
+export async function updateSesion(id: string, data: Partial<CreateSesionDTO>): Promise<SesionDTO> {
+  return apiPatch(`/api/sesiones/${id}/`, data);
+}
+
+export async function deleteSesion(id: string): Promise<boolean> {
+  return apiDelete(`/api/sesiones/${id}/`);
+}
+
+export async function fetchAsistencias(): Promise<AsistenciaDTO[]> {
   return apiGet("/api/asistencias/");
+}
+
+export async function fetchAsistenciasPorSesion(sesionId: string): Promise<AsistenciaDTO[]> {
+  return apiGet(`/api/asistencias/?sesion=${sesionId}`);
+}
+
+export async function createAsistenciaBatch(data: CreateAsistenciaDTO[]): Promise<AsistenciaDTO[]> {
+  return apiPost("/api/asistencias/batch/", data);
+}
+
+export async function deleteAsistencia(id: string): Promise<boolean> {
+  return apiDelete(`/api/asistencias/${id}/`);
 }
 
 /* ========= EVENTOS / TICKETS ========= */
